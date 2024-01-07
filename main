@@ -1,0 +1,32 @@
+import requests
+from bs4 import BeautifulSoup
+import json
+
+url = 'http://quotes.toscrape.com'
+response = requests.get(url)
+soup = BeautifulSoup(response.text, 'html.parser')
+
+
+quotes_data = []
+authors_data = []
+
+
+for quote in soup.find_all(class_='quote'):
+    text = quote.find(class_='text').get_text()
+    author = quote.find(class_='author').get_text()
+    tags = [tag.get_text() for tag in quote.find_all(class_='tag')]
+    
+    quotes_data.append({
+        'text': text,
+        'author': author,
+        'tags': tags
+    })
+
+    if not any(item['name'] == author for item in authors_data):
+        authors_data.append({'name': author})
+
+with open('quotes.json', 'w', encoding='utf-8') as quotes_file:
+    json.dump(quotes_data, quotes_file, ensure_ascii=False, indent=4)
+
+with open('authors.json', 'w', encoding='utf-8') as authors_file:
+    json.dump(authors_data, authors_file, ensure_ascii=False, indent=4)
